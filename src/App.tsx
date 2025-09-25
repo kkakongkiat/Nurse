@@ -3,6 +3,10 @@ import { Heart, User, Calendar, Shield, ArrowRight, Stethoscope, Pill, BookHeart
 import liff from "@line/liff";
 import axios from "axios";
 
+import bedroom from '/image/bedroom.jpg';
+import mail from '/image/mail.jpg';
+import pills from '/image/pills.jpg';
+
 type Profile = {
   userId: string;
   displayName: string;
@@ -754,7 +758,7 @@ function App() {
               คุณกำลังดูแลสุขภาพและความปลอดภัยของตัวเองและคู่ของคุณ 💚
             </p>
             <img
-              src="/image/bedroom.png"
+              src={bedroom}
               alt="safe love"
               className="w-40 h-40"
             />
@@ -881,7 +885,7 @@ function App() {
                 ระบบจะทำการส่งข้อความแจ้งเตือนผ่านไลน์ Official สำหรับความเสี่ยงในการเกิดโรค 💖
               </p>
               <img
-                src="/image/mail.png"
+                src={mail}
                 alt="safe love"
                 className="w-40 h-40"
               />
@@ -922,7 +926,7 @@ function App() {
                 ระบบจะทำการส่งข้อความแจ้งเตือนผ่านไลน์ Official สำหรับการกินยาคุมของท่าน 💖
               </p>
               <img
-                src="/image/pills.png"
+                src={pills}
                 alt="safe love"
                 className="w-40 h-40"
               />
@@ -970,7 +974,7 @@ function App() {
                 ระบบจะทำการส่งข้อความแจ้งเตือนผ่านไลน์ Official สำหรับการกินยาคุมของท่าน 💖
               </p>
               <img
-                src="/image/pills.png"
+                src={pills}
                 alt="safe love"
                 className="w-40 h-40"
               />

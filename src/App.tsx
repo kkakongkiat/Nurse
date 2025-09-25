@@ -165,7 +165,7 @@ function App() {
   const handleAnswer = (answer: 'yes' | 'no') => {
     if (answer === 'yes'){
       setCurrentPage('Follow');
-      axios.post('/api/server/add', formData)
+      axios.post('/api/server?endpoint=add', formData)
       setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '' }));
     } else {
       setCurrentPage('welcome');
@@ -175,7 +175,7 @@ function App() {
   const handlePill2 = (answer: 'yes' | 'no') => {
     if (answer === 'yes'){
       setCurrentPage('welcome');
-      axios.post('/api/server/pill2', formData)
+      axios.post('/api/server?endpoint=pill2', formData)
       setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '', pillDate: '', pillTime: '' }));
     } else {
       setCurrentPage('welcome');
@@ -184,7 +184,7 @@ function App() {
   const handlePillM = (answer: 'yes' | 'no') => {
     if (answer === 'yes'){
       setCurrentPage('welcome');
-      axios.post('/api/server/pillM', formData)
+      axios.post('/api/server?endpoint=pillM', formData)
       setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '', pillDate: '', pillTime: '' }));
     } else {
       setCurrentPage('welcome');

@@ -3,9 +3,9 @@ import { Heart, User, Calendar, Shield, ArrowRight, Stethoscope, Pill, BookHeart
 import liff from "@line/liff";
 import axios from "axios";
 
-import bedroom from '/image/bedroom.jpg';
-import mail from '/image/mail.jpg';
-import pills from '/image/pills.jpg';
+import bedroom from '/image/bedroom.png';
+import mail from '/image/mail.png';
+import pills from '/image/pills.png';
 
 type Profile = {
   userId: string;

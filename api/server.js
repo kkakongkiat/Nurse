@@ -1,15 +1,7 @@
-import express from "express";
 import { google } from "googleapis";
-import cors from "cors";
 
-// โหลด credentials จากไฟล์ JSON (จาก Google Cloud)
+// โหลด credentials จาก environment variable
 const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-
-const app = express();
-app.use(
-  cors()
-);
-app.use(express.json());
 
 const auth = new google.auth.GoogleAuth({
   credentials,
@@ -23,74 +15,48 @@ const SPREADSHEET_ID = "13sEwRlrUA2qfj4V5GkX4B-_2SZEwhmX3amfl5J5d23M";
 const SPREADSHEET_ID_pill2 = "11EhMJEkZAzKlACnh7pG-is0E_dnfuvS1NR2xiZWeZek";
 const SPREADSHEET_ID_pillM = "1OmYClIjHQQS4bruvK2dZ5_L9xRNvV372epU57bbKqpY";
 
-app.post("/add", async (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Method not allowed" });
+  }
+
+  const { endpoint } = req.query; // ส่ง endpoint เป็น query เช่น ?endpoint=add
+  const { uid, gender, age, selectedDate, hasProtection, pillDate, pillTime } = req.body;
+  const numericAge = Number(age);
+
   try {
-    const { uid, gender, age, selectedDate, hasProtection } = req.body;
-    const numericAge = Number(age);
+    let spreadsheetId;
+    let values;
+
+    switch (endpoint) {
+      case "add":
+        spreadsheetId = SPREADSHEET_ID;
+        values = [[uid, gender, numericAge, selectedDate, hasProtection]];
+        break;
+      case "pill2":
+        spreadsheetId = SPREADSHEET_ID_pill2;
+        values = [[uid, gender, numericAge, selectedDate, pillDate, pillTime]];
+        break;
+      case "pillM":
+        spreadsheetId = SPREADSHEET_ID_pillM;
+        values = [[uid, gender, numericAge, selectedDate, pillDate, pillTime]];
+        break;
+      default:
+        return res.status(400).json({ success: false, error: "Invalid endpoint" });
+    }
 
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId,
       range: "Sheet1!A:E",
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
-      requestBody: {
-      values: [[uid, gender, numericAge, selectedDate, hasProtection]],
-      },
+      requestBody: { values },
     });
 
-    res.json({ success: true, response: response.data });
-    console.log('data added', response.data);
+    console.log("Data added:", values);
+    return res.status(200).json({ success: true, response: response.data });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
-});
-
-app.post("/pill2", async (req, res) => {
-  try {
-    const { uid, gender, age, selectedDate, pillDate, pillTime } = req.body;
-    const numericAge = Number(age);
-
-    const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID_pill2,
-      range: "Sheet1!A:E",
-      valueInputOption: "USER_ENTERED",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: {
-      values: [[uid, gender, numericAge, selectedDate, pillDate, pillTime]],
-      },
-    });
-
-    res.json({ success: true, response: response.data });
-    console.log('data added', response.data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-app.post("/pillM", async (req, res) => {
-  try {
-    const { uid, gender, age, selectedDate, pillDate, pillTime } = req.body;
-    const numericAge = Number(age);
-
-    const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID_pillM,
-      range: "Sheet1!A:E",
-      valueInputOption: "USER_ENTERED",
-      insertDataOption: "INSERT_ROWS",
-      requestBody: {
-      values: [[uid, gender, numericAge, selectedDate, pillDate, pillTime]],
-      },
-    });
-
-    res.json({ success: true, response: response.data });
-    console.log('data added', response.data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-
-export default app;
+}

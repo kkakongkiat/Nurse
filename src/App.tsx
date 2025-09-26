@@ -96,7 +96,7 @@ function App() {
         await liff.init({ liffId: "2008144125-jnDAw5N4", withLoginOnExternalBrowser: true });
 
         if (!liff.isLoggedIn()) {
-          liff.login();
+          liff.login({ redirectUri: window.location.href });
         } else {
           const userProfile = await liff.getProfile();
           setProfile(userProfile);

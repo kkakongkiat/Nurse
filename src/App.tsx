@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Heart, User, Calendar, Shield, ArrowRight, Stethoscope, Pill, BookHeart, Archive, Clock3, CalendarDays} from 'lucide-react';
+import { Heart, User, Calendar, Shield, ArrowRight, Stethoscope, Pill, BookHeart, Archive, Clock3, CalendarDays, ClipboardList, Syringe,Tally1,Tally3,} from 'lucide-react';
 import liff from "@line/liff";
 import axios from "axios";
 
 import bedroom from '/image/bedroom.png';
 import mail from '/image/mail.png';
 import pills from '/image/pills.png';
+import risk from '/image/risk.png';
+import syring from '/image/syring.png';
 
 type Profile = {
   userId: string;
@@ -23,6 +25,8 @@ interface FormData {
   hasProtection: 'yes' | 'no' | '';
   pillDate: string;
   pillTime: string;
+  injectDate: string;
+  point: number;
 }
 
 // ✅ Loading Component
@@ -79,7 +83,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<'welcome' | 'form' | 'Women' | 'Pill' | 'MP' | '2P' | 'Protect' |  'Checking' | 'Follow' | 'FollowP2'| 'FollowPM' >('welcome');
+  const [currentPage, setCurrentPage] = useState<'welcome' | 'form' | 'Women' | 'Pill' | 'MP' | '2P' |'Injection'|'1M'|'3M'| 'Protect' | 'Checking' | 'Follow' | 'FollowP2' | 'FollowPM'| 'Follow1M' | 'Follow3M' | 'Warning' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5' >('welcome');
   const [formData, setFormData] = useState<FormData>({
     uid: '',
     gender: '',
@@ -88,6 +92,8 @@ function App() {
     hasProtection: '',
     pillDate: '',
     pillTime: '',
+    injectDate: '',
+    point: 0,
   });
 
   useEffect(() => {
@@ -128,7 +134,7 @@ function App() {
     
   };
 
-  const handleWomen = (func: 'form' | 'pill' | 'MP' | '2P') => {
+  const handleWomen = (func: 'form' | 'pill' | 'MP' | '2P'|'Injection'|'1M'|'3M') => {
     if (func === 'form'){
       setCurrentPage('form');
     } else if (func === 'pill'){
@@ -137,6 +143,12 @@ function App() {
       setCurrentPage('MP');
     } else if (func === '2P'){
       setCurrentPage('2P');
+    } else if (func === 'Injection'){
+      setCurrentPage('Injection');
+    } else if (func === '1M'){
+      setCurrentPage('1M');
+    } else if (func === '3M'){
+      setCurrentPage('3M');
     }
     
   }
@@ -147,11 +159,7 @@ function App() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.hasProtection === 'yes'){
-      setCurrentPage('Protect');
-    } else {
-      setCurrentPage('Checking');
-    }
+      setCurrentPage('Q1');
   };
   const handleP2Submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,14 +169,23 @@ function App() {
     e.preventDefault();
     setCurrentPage('FollowPM');
   };
+  const handle1MSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage('Follow1M');
+  };
+  const handle3MSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage('Follow3M');
+  };
 
   const handleAnswer = (answer: 'yes' | 'no') => {
     if (answer === 'yes'){
       setCurrentPage('Follow');
       axios.post('/api/server?endpoint=add', formData)
-      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '' }));
+      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '',point: 0 }));
     } else {
       setCurrentPage('welcome');
+      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '',point: 0 }));
     }
   }
 
@@ -191,8 +208,61 @@ function App() {
     }
   }
 
+  const handleInject1M = (answer: 'yes' | 'no') => {
+    if (answer === 'yes'){
+      setCurrentPage('welcome');
+      axios.post('/api/server?endpoint=inject1M', formData)
+      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '', injectDate: '' }));
+    } else {
+      setCurrentPage('welcome');
+    }
+  }
+  const handleInject3M = (answer: 'yes' | 'no') => {
+    if (answer === 'yes'){
+      setCurrentPage('welcome');
+      axios.post('/api/server?endpoint=inject3M', formData)
+      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '', injectDate: '' }));
+    } else {
+      setCurrentPage('welcome');
+    }
+  }
+
+  const handlequestion = (answer: 'yes' | 'no', point: number) => {
+    if (answer === 'yes' && currentPage === 'Q1'){
+      setFormData(prev => ({ ...prev, point: prev.point + point }));
+      setCurrentPage('Q2');
+    } else if (answer === 'yes' && currentPage === 'Q2'){
+      setFormData(prev => ({ ...prev, point: prev.point + point }));
+      setCurrentPage('Q3');
+    } else if (answer === 'yes' && currentPage === 'Q3'){
+      setFormData(prev => ({ ...prev, point: prev.point + point }));
+      setCurrentPage('Q4');
+    } else if (answer === 'yes' && currentPage === 'Q4'){
+      setFormData(prev => ({ ...prev, point: prev.point + point }));
+      setCurrentPage('Q5');
+    } else if (answer === 'yes' && currentPage === 'Q5'){
+      setFormData(prev => ({ ...prev, point: prev.point + point }));
+      setCurrentPage('Warning');
+    }
+  }
+  const handlewarning = (answer: 'yes' | 'no') => {
+    if (answer === 'yes' && formData.hasProtection === 'yes'){
+      setCurrentPage('Protect');
+    } else if (answer === 'yes' && formData.hasProtection === 'no'){
+      setCurrentPage('Checking');
+    }
+  }
+
+  const handleend = (answer: 'yes' | 'no') => {
+    if (answer === 'yes'){
+      setCurrentPage('welcome');
+      setFormData(prev => ({ ...prev, age: '', selectedDate: '', hasProtection: '',point: 0 }));
+    }
+  }
+
   const isFormValid = (formData.age && formData.selectedDate && formData.hasProtection);
   const isFormValid2 = (formData.age&&formData.selectedDate&&formData.pillDate&&formData.pillTime);
+  const isFormValid3 = (formData.age&&formData.selectedDate&&formData.injectDate);
 
   if (currentPage === 'welcome') {
     return (
@@ -492,6 +562,23 @@ function App() {
                 <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
               </div>
             </button>
+
+            <button
+              onClick={() => handleWomen('Injection')}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-orange-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                  <Syringe className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-semibold text-gray-800">ยาคุมกำเนิดแบบฉีด</h3>
+                  <p className="text-gray-500">Contraceptive Injection</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-orange-600 transition-colors" />
+              </div>
+            </button>
+
           </div>
 
           {/* Footer */}
@@ -501,7 +588,71 @@ function App() {
         </div>
       </div>
     );
-  }else if (currentPage === 'MP') {
+  }else if (currentPage === 'Injection') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="grid grid-cols-3 gap-8">
+              <div>
+                <button
+                  onClick={() => setCurrentPage('Pill')}
+                  className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
+                  <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
+                    กลับ
+                </button>
+              </div>
+              <div className="text-center inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+                <Syringe className="w-10 h-10 text-orange-600" />
+              </div>
+            </div>
+            <h1 className="text-center text-3xl font-bold text-gray-800 mb-2">ยาคุมกำเนิดแบบฉีด</h1>
+          </div>
+
+          <div className="space-y-4">
+            <button
+              onClick={() => handleWomen('1M')}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <Tally1 className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-semibold text-gray-800">แบบราย 1 เดือน</h3>
+                  <p className="text-gray-500">1 month type</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleWomen('3M')}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Tally3 className="w-6 h-6 text-pink-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-semibold text-gray-800">แบบราย 3 เดือน</h3>
+                  <p className="text-gray-500">3 month type</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'MP') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -741,7 +892,219 @@ function App() {
       </div>
     </div>
     );
-  }else if (currentPage === 'Protect') {
+  } else if (currentPage === '1M') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="grid grid-cols-3 gap-8">
+            <div>
+              <button
+                onClick={() => setCurrentPage('Injection')}
+                className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
+                <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
+                  ย้อนกลับ
+              </button>
+            </div>
+            <div className="text-center inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4 mx-auto">
+                {formData.gender === 'male' ? (
+                  <User className="w-8 h-8 text-blue-600" />
+                ) : (
+                  <Heart className="w-8 h-8 text-pink-600" />
+                )}
+            </div>
+            <div></div>
+          </div>
+          <h1 className="text-center text-2xl font-bold text-gray-800 mb-2">กรอกข้อมูลส่วนตัว</h1>
+          <p className="text-center text-gray-600">กรุณากรอกข้อมูลให้ครบถ้วน</p>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <form onSubmit={handle1MSubmit} className="space-y-6">
+            {/* Age */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.age ? "text-green-600" : "text-red-600"}`}>
+                อายุ *
+              </label>
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => handleInputChange('age', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                placeholder="กรอกอายุของท่าน"
+                min="1"
+                max="120"
+                required
+              />
+            </div>
+
+            {/* Date Selection */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.selectedDate ? "text-green-600" : "text-red-600"}`}>
+                <Calendar className="inline w-4 h-4 mr-2" />
+                วันที่มีเพศสัมพันธ์ *
+              </label>
+              <input
+                type="date"
+                value={formData.selectedDate}
+                onChange={(e) => handleInputChange('selectedDate', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                required
+              />
+            </div>
+            {/* PILL */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.injectDate ? "text-green-600" : "text-red-600"}`}>
+                <CalendarDays className="inline w-4 h-4 mr-2" />
+                วันที่เริ่มฉีดยาคุม *
+              </label>
+              <input
+                type="date"
+                value={formData.injectDate}
+                onChange={(e) => handleInputChange('injectDate', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6">
+              <button
+                type="submit"
+                disabled={!isFormValid3}
+                className={`w-full py-4 rounded-lg font-semibold text-white transition-all duration-300 ${
+                  isFormValid3
+                    ? `${formData.gender === 'male' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-pink-600 hover:bg-pink-700'} shadow-lg hover:shadow-xl transform hover:-translate-y-1`
+                    : 'bg-gray-300 cursor-not-allowed'
+                }`}
+              >
+                บันทึกข้อมูล
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500">
+            ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย
+          </p>
+        </div>
+      </div>
+    </div>
+    );
+  } else if (currentPage === '3M') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="grid grid-cols-3 gap-8">
+            <div>
+              <button
+                onClick={() => setCurrentPage('Injection')}
+                className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
+                <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
+                  ย้อนกลับ
+              </button>
+            </div>
+            <div className="text-center inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4 mx-auto">
+                {formData.gender === 'male' ? (
+                  <User className="w-8 h-8 text-blue-600" />
+                ) : (
+                  <Heart className="w-8 h-8 text-pink-600" />
+                )}
+            </div>
+            <div></div>
+          </div>
+          <h1 className="text-center text-2xl font-bold text-gray-800 mb-2">กรอกข้อมูลส่วนตัว</h1>
+          <p className="text-center text-gray-600">กรุณากรอกข้อมูลให้ครบถ้วน</p>
+        </div>
+
+        {/* Form */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <form onSubmit={handle3MSubmit} className="space-y-6">
+            {/* Age */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.age ? "text-green-600" : "text-red-600"}`}>
+                อายุ *
+              </label>
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => handleInputChange('age', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                placeholder="กรอกอายุของท่าน"
+                min="1"
+                max="120"
+                required
+              />
+            </div>
+
+            {/* Date Selection */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.selectedDate ? "text-green-600" : "text-red-600"}`}>
+                <Calendar className="inline w-4 h-4 mr-2" />
+                วันที่มีเพศสัมพันธ์ *
+              </label>
+              <input
+                type="date"
+                value={formData.selectedDate}
+                onChange={(e) => handleInputChange('selectedDate', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                required
+              />
+            </div>
+            {/* PILL */}
+            <div>
+              <label className={`block text-sm font-medium mb-2 transition-colors
+                                ${formData.injectDate ? "text-green-600" : "text-red-600"}`}>
+                <CalendarDays className="inline w-4 h-4 mr-2" />
+                วันที่เริ่มฉีดยาคุม *
+              </label>
+              <input
+                type="date"
+                value={formData.injectDate}
+                onChange={(e) => handleInputChange('injectDate', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6">
+              <button
+                type="submit"
+                disabled={!isFormValid3}
+                className={`w-full py-4 rounded-lg font-semibold text-white transition-all duration-300 ${
+                  isFormValid3
+                    ? `${formData.gender === 'male' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-pink-600 hover:bg-pink-700'} shadow-lg hover:shadow-xl transform hover:-translate-y-1`
+                    : 'bg-gray-300 cursor-not-allowed'
+                }`}
+              >
+                บันทึกข้อมูล
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500">
+            ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย
+          </p>
+        </div>
+      </div>
+    </div>
+    );
+  } else if (currentPage === 'Protect') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
@@ -766,7 +1129,7 @@ function App() {
             <div className="w-full mb-8 mt-8">
               <div className="text-center">
                 <button
-                      onClick={() => setCurrentPage('welcome')}
+                      onClick={() => handleend("yes")}
                       className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
                       <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
                         กลับ
@@ -788,12 +1151,12 @@ function App() {
       <div className="min-h-screen bg-gradient-to-b from-pink-50 to-blue-50 p-6 flex flex-col">
         <div className="grid grid-cols-3 gap-8">
               <div>
-                <button
+                {/* <button
                   onClick={() => setCurrentPage('form')}
                   className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
                   <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
                     กลับ
-                </button>
+                </button> */}
               </div>
             </div>
       <h1 className="text-2xl font-bold text-center text-pink-700 mb-3">
@@ -997,6 +1360,509 @@ function App() {
               </div>
             </div>
           </div>
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Follow1M') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col items-center justify-center mb-8 ">
+              
+              <h1 className="text-2xl font-bold text-green-700 mb-4">
+                บันทึกการฉีดยาคุมแบบ 1 เดือน! 💉
+              </h1>
+              <p className="text-lg text-gray-700 text-center">
+                หากกดยืนยัน
+              </p>
+              <p className="text-lg text-gray-700 text-center mb-6">
+                ระบบจะทำการส่งข้อความแจ้งเตือนผ่านไลน์ Official สำหรับการกินยาคุมของท่าน 💖
+              </p>
+              <img
+                src={syring}
+                alt="safe love"
+                className="w-40 h-40"
+              />
+            </div>
+          
+            <button
+              onClick={() => handleInject1M("yes")}
+              className="w-full py-4 rounded-lg font-semibold text-white transition-all duration-300 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-md transition">
+              ยืนยัน
+            </button>
+          
+          <div className="w-full mb-8 mt-8">
+              <div className="text-center">
+                <button
+                      onClick={() => setCurrentPage('1M')}
+                      className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
+                      <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
+                        กลับ
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Follow3M') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col items-center justify-center mb-8 ">
+              
+              <h1 className="text-2xl font-bold text-green-700 mb-4">
+                บันทึกการฉีดยาคุมแบบ 3 เดือน! 💉
+              </h1>
+              <p className="text-lg text-gray-700 text-center">
+                หากกดยืนยัน
+              </p>
+              <p className="text-lg text-gray-700 text-center mb-6">
+                ระบบจะทำการส่งข้อความแจ้งเตือนผ่านไลน์ Official สำหรับการกินยาคุมของท่าน 💖
+              </p>
+              <img
+                src={syring}
+                alt="safe love"
+                className="w-40 h-40"
+              />
+            </div>
+          
+            <button
+              onClick={() => handleInject3M("yes")}
+              className="w-full py-4 rounded-lg font-semibold text-white transition-all duration-300 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-md transition">
+              ยืนยัน
+            </button>
+          
+          <div className="w-full mb-8 mt-8">
+              <div className="text-center">
+                <button
+                      onClick={() => setCurrentPage('3M')}
+                      className="text-left inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4">
+                      <ArrowRight className=" w-4 h-4 rotate-180 mr-2" />
+                        กลับ
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Q1') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+              <ClipboardList className="w-10 h-10 text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg">คำนวณความเสี่ยงของคุณ</p>
+            <p className="text-gray-600 text-lg">ตอบคำถามต่อไปนี้</p>
+            <h3 className="text-3xl font-bold text-gray-800 mb-2">การใช้ถุงยางอนามัย</h3>
+          </div>
+
+          {/* Gender Selection Cards */}
+          <div className="space-y-4">
+            <button
+              onClick={() => handlequestion("yes",0)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">ทุกครั้ง</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",2)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">บางครั้ง</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",3)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">ไม่เคยใช้เลย</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Q2') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+              <ClipboardList className="w-10 h-10 text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg">คำนวณความเสี่ยงของคุณ</p>
+            <p className="text-gray-600 text-lg">ตอบคำถามต่อไปนี้</p>
+            <h3 className="text-3xl font-bold text-gray-800 mb-2">จำนวนคู่นอน</h3>
+          </div>
+
+          {/* Gender Selection Cards */}
+          <div className="space-y-4">
+            <button
+              onClick={() => handlequestion("yes",0)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">1 คนมั่นคง</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",2)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">มากกว่า 1 คน แต่ &lt; 5 คน/ปี</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",3)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">&gt; 5 คน/ปี หรือไม่ทราบแน่ชัด</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Q3') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+              <ClipboardList className="w-10 h-10 text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg">คำนวณความเสี่ยงของคุณ</p>
+            <p className="text-gray-600 text-lg">ตอบคำถามต่อไปนี้</p>
+            <h3 className="text-3xl font-bold text-gray-800 mb-2">การมีเพศสัมพันธ์กับกลุ่มเสี่ยง</h3>
+            <p>(Sex worker, Partner ที่ไม่ทราบประวัติสุขภาพ)</p>
+          </div>
+
+          {/* Gender Selection Cards */}
+          <div className="space-y-4">
+            <button
+              onClick={() => handlequestion("yes",0)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">ไม่เคย</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",2)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">เคยบางครั้ง</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",3)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">บ่อย/ประจำ</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Q4') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+              <ClipboardList className="w-10 h-10 text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg">คำนวณความเสี่ยงของคุณ</p>
+            <p className="text-gray-600 text-lg">ตอบคำถามต่อไปนี้</p>
+            <h3 className="text-3xl font-bold text-gray-800 mb-2">พฤติกรรมการป้องกันอื่น</h3>
+          </div>
+
+          {/* Gender Selection Cards */}
+          <div className="space-y-4">
+            <button
+              onClick={() => handlequestion("yes",-1)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">ใช้ PrEP/PEP หรือเคยตรวจสุขภาพสม่ำเสมอ</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",1)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">ไม่เคยตรวจเลย</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Q5') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-6">
+              <ClipboardList className="w-10 h-10 text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg">คำนวณความเสี่ยงของคุณ</p>
+            <p className="text-gray-600 text-lg">ตอบคำถามต่อไปนี้</p>
+            <h3 className="text-3xl font-bold text-gray-800 mb-2">การใช้แอลกอฮอล์/สารเสพติดก่อนมีเพศสัมพันธ์</h3>
+          </div>
+
+          {/* Gender Selection Cards */}
+          <div className="space-y-4">
+            <button
+              onClick={() => handlequestion("yes",0)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">ไม่เคย</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",2)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-pink-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">เคยบางครั้ง</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-pink-600 transition-colors" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handlequestion("yes",3)}
+              className="w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+                  <Heart className="w-6 h-6 text-pink-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800">บ่อย/ประจำ</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
+          </div>
+        </div>
+      </div>
+    );
+  } else if (currentPage === 'Warning') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="mb-8">
+          
+          <div className="flex flex-col items-center justify-center min-h-screen ">
+            
+            <h1 className="text-2xl font-bold text-green-700 mb-4">
+              คำนวณความเสี่ยงของคุณ 💭
+            </h1>
+            <p className="text-lg text-gray-700 mb-/ text-center">
+              คุณมีคะแนนความเสี่ยงอยู่ที่ {formData.point > 0 ? formData.point : "0"} คะแนน
+            </p>
+            {formData.point < 3 ? (
+              <>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีความเสี่ยงต่ำ
+                </p>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีพฤติกรรมที่ค่อนข้างปลอดภัย แต่ควรตรวจสอบสุขภาพเป็นประจำทุกปี 
+                </p>
+              </>
+            ) : formData.point > 8 ? (
+              <>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีความเสี่ยงสูง
+                </p>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีพฤติกรรมที่เสี่ยงสูงต่อการติดโรคติดต่อทางเพศสัมพันธ์ แนะนำตรวจสุขภาพทันที และควรใช้ถุงยางอนามัยทุกครั้งที่มีเพศสัมพันธ์
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีความเสี่ยงปานกลาง
+                </p>
+                <p className="text-lg text-gray-700 mb-6 text-center">
+                  คุณมีพฤติกรรมบางอย่างที่เสี่ยง ควรใช้ถุงยางอนามัยทุกครั้งที่มีเพศสัมพันธ์ และตรวจสุขภาพเป็นประจำทุก 6 เดือน
+                </p>
+              </>
+            )}
+            <img
+              src={risk}
+              alt="safe love"
+              className="w-40 h-40"
+            />
+
+            <button
+              onClick={() => handlewarning("yes")}
+              className="mt-8 w-full p-6 bg-white rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border-2 border-transparent hover:border-blue-300 group"
+            >
+              <div className="flex items-center justify-center space-x-4">
+                {/* <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div> */}
+                <div className="flex-1 text-center">
+                  <h3 className="text-xl font-semibold text-gray-800 ">ต่อไป</h3>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+            </button>
+
+          </div>
+          </div>
+          {/* Footer */}
           <div className="text-center mt-8">
             <p className="text-sm text-gray-500">ข้อมูลของท่านจะถูกเก็บรักษาอย่างปลอดภัย</p>
           </div>

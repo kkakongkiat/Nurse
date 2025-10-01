@@ -14,6 +14,8 @@ const sheets = google.sheets({ version: "v4", auth });
 const SPREADSHEET_ID = "13sEwRlrUA2qfj4V5GkX4B-_2SZEwhmX3amfl5J5d23M";
 const SPREADSHEET_ID_pill2 = "11EhMJEkZAzKlACnh7pG-is0E_dnfuvS1NR2xiZWeZek";
 const SPREADSHEET_ID_pillM = "1OmYClIjHQQS4bruvK2dZ5_L9xRNvV372epU57bbKqpY";
+const SPREADSHEET_ID_inject1M = "1ZH-F3EXr964Vrh2Ryh-hTTZ2QRW_TNGUQPY0u6GzPnE"
+const SPREADSHEET_ID_inject3M = "1ZbbLwBLCks22CpLfugV03A5e957eEBg3ps7xDFxcm_I"
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -21,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   const { endpoint } = req.query; // ส่ง endpoint เป็น query เช่น ?endpoint=add
-  const { uid, gender, age, selectedDate, hasProtection, pillDate, pillTime } = req.body;
+  const { uid, gender, age, selectedDate, hasProtection, pillDate, pillTime,injectDate } = req.body;
   const numericAge = Number(age);
 
   try {
@@ -40,6 +42,14 @@ export default async function handler(req, res) {
       case "pillM":
         spreadsheetId = SPREADSHEET_ID_pillM;
         values = [[uid, gender, numericAge, selectedDate, pillDate, pillTime]];
+        break;
+      case "inject1M":
+        spreadsheetId = SPREADSHEET_ID_inject1M;
+        values = [[uid, gender, numericAge, selectedDate, injectDate]];
+        break;
+      case "inject3M":
+        spreadsheetId = SPREADSHEET_ID_inject3M;
+        values = [[uid, gender, numericAge, selectedDate, injectDate]];
         break;
       default:
         return res.status(400).json({ success: false, error: "Invalid endpoint" });
